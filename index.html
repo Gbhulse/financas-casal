@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>💰 Finanças do Casal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-hover: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 0;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--bg-main);
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 80px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5em;
+            font-weight: 800;
+            margin-bottom: 5px;
+        }
+
+        .header-subtitle {
+            font-size: 0.85em;
+            opacity: 0.9;
+        }
+
+        .month-selector {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: var(--bg-card);
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+        }
+
+        .month-selector select {
+            flex: 1;
+            padding: 12px;
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1em;
+            font-weight: 600;
+        }
+
+        .btn-new-month {
+            padding: 12px 20px;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-weight: 700;
+            font-size: 0.9em;
+            white-space: nowrap;
+        }
+
+        .summary-cards {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .summary-card {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--accent);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .summary-card.full {
+            grid-column: 1 / -1;
+        }
+
+        .summary-label {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            font-weight: 600;
+        }
+
+        .summary-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.5em;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .summary-detail {
+            font-size: 0.75em;
+            color: var(--text-secondary);
+            margin-top: 3px;
+        }
+
+        .receita { --accent: var(--success); }
+        .despesas { --accent: var(--danger); }
+        .sobra { --accent: var(--warning); }
+
+        .section {
+            padding: 20px 15px;
+        }
+
+        .section-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            font-weight: 700;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .config-form {
+            background: var(--bg-card);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            color: var(--text-secondary);
+            font-size: 0.85em;
+            font-weight: 600;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: var(--bg-main);
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            color: var(--text-primary);
+            font-size: 1em;
+            font-family: 'Inter', sans-serif;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        input[type="number"] {
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1em;
+            font-weight: 700;
+            cursor: pointer;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+        }
+
+        .expense-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .expense-item {
+            background: var(--bg-card);
+            padding: 15px;
+            border-radius: 12px;
+            border-left: 4px solid var(--category-color);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .expense-info {
+            flex: 1;
+        }
+
+        .expense-name {
+            font-weight: 600;
+            font-size: 1em;
+            margin-bottom: 4px;
+        }
+
+        .expense-meta {
+            font-size: 0.8em;
+            color: var(--text-secondary);
+        }
+
+        .expense-value {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.2em;
+            font-weight: 700;
+            color: var(--danger);
+            margin-right: 10px;
+        }
+
+        .expense-delete {
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            font-size: 1.2em;
+            cursor: pointer;
+        }
+
+        .expense-delete:active {
+            transform: scale(0.95);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        .empty-icon {
+            font-size: 3em;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .fab-container {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .fab {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            border: none;
+            font-size: 2em;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.5);
+            cursor: pointer;
+        }
+
+        .fab:active {
+            transform: scale(0.95);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            width: 100%;
+            max-width: 600px;
+            border-radius: 20px 20px 0 0;
+            padding: 25px;
+            max-height: 85vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+            }
+            to {
+                transform: translateY(0);
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-title {
+            font-family: 'Poppins', sans-serif;
+            font-size: 1.4em;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: var(--bg-main);
+            border: none;
+            color: var(--text-primary);
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        .sync-status {
+            padding: 10px 15px;
+            background: rgba(16, 185, 129, 0.15);
+            border: 1px solid var(--success);
+            border-radius: 10px;
+            color: var(--success);
+            font-size: 0.85em;
+            text-align: center;
+            margin: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .spinner {
+            border: 3px solid var(--border);
+            border-top: 3px solid var(--primary);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .fixa { --category-color: var(--danger); }
+        .mercado { --category-color: var(--success); }
+        .pessoal { --category-color: var(--primary); }
+        .farmacia { --category-color: var(--warning); }
+        .outros { --category-color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <h1>💰 Finanças do Casal</h1>
+            <p class="header-subtitle">Sincronizado em tempo real</p>
+        </div>
+
+        <div class="sync-status" id="syncStatus">
+            <span>🔄</span>
+            <span>Carregando dados...</span>
+        </div>
+
+        <div class="month-selector">
+            <select id="monthSelect" onchange="carregarMes()">
+                <!-- Months will be populated by JS -->
+            </select>
+            <button class="btn-new-month" onclick="abrirNovoMes()">+ Novo Mês</button>
+        </div>
+
+        <div class="summary-cards">
+            <div class="summary-card receita">
+                <div class="summary-label">💵 Receita</div>
+                <div class="summary-value" id="totalReceita">R$ 0</div>
+            </div>
+            <div class="summary-card despesas">
+                <div class="summary-label">💸 Despesas</div>
+                <div class="summary-value" id="totalDespesas">R$ 0</div>
+            </div>
+            <div class="summary-card sobra full">
+                <div class="summary-label">💎 Sobra para Abate do Financiamento</div>
+                <div class="summary-value" id="totalSobra">R$ 0</div>
+                <div class="summary-detail" id="sobraDetail"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-title">
+                <span>📋</span>
+                <span>Despesas do Mês</span>
+            </div>
+            <div class="expense-list" id="expenseList">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    <p>Carregando despesas...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="fab-container">
+            <button class="fab" onclick="abrirModalDespesa()">+</button>
+        </div>
+    </div>
+
+    <!-- Modal Configurar Receitas -->
+    <div class="modal" id="modalReceitas">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">⚙️ Configurar Receitas</div>
+                <button class="modal-close" onclick="fecharModal('modalReceitas')">×</button>
+            </div>
+            <div class="form-group">
+                <label>Salário Fixo (Você)</label>
+                <input type="number" id="salarioFixo" value="7000" placeholder="7000">
+            </div>
+            <div class="form-group">
+                <label>Integralmedica (Variável)</label>
+                <input type="number" id="integralmedica" placeholder="Ex: 2000">
+            </div>
+            <div class="form-group">
+                <label>Flora Amar (Variável)</label>
+                <input type="number" id="floraAmar" placeholder="Ex: 500">
+            </div>
+            <button class="btn btn-success" onclick="salvarReceitas()">💾 Salvar Receitas</button>
+        </div>
+    </div>
+
+    <!-- Modal Adicionar Despesa -->
+    <div class="modal" id="modalDespesa">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">➕ Adicionar Despesa</div>
+                <button class="modal-close" onclick="fecharModal('modalDespesa')">×</button>
+            </div>
+            <div class="form-group">
+                <label>Descrição</label>
+                <input type="text" id="descricao" placeholder="Ex: Mercado, Luz...">
+            </div>
+            <div class="form-group">
+                <label>Valor (R$)</label>
+                <input type="number" id="valor" placeholder="0.00" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Categoria</label>
+                <select id="categoria">
+                    <option value="fixa">🏠 Conta Fixa</option>
+                    <option value="mercado">🛒 Mercado</option>
+                    <option value="pessoal">👤 Gasto Pessoal</option>
+                    <option value="farmacia">💊 Farmácia</option>
+                    <option value="outros">📦 Outros</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Cartão</label>
+                <select id="cartao">
+                    <option value="cartao1">💳 Cartão 1 (vence dia 05)</option>
+                    <option value="cartao2">💳 Cartão 2 (vence dia 28)</option>
+                </select>
+            </div>
+            <button class="btn" onclick="adicionarDespesa()">➕ Adicionar</button>
+        </div>
+    </div>
+
+    <!-- Modal Novo Mês -->
+    <div class="modal" id="modalNovoMes">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">📅 Novo Mês</div>
+                <button class="modal-close" onclick="fecharModal('modalNovoMes')">×</button>
+            </div>
+            <div class="form-group">
+                <label>Selecione o Mês</label>
+                <select id="novoMesSelect">
+                    <option value="2026-02">Fevereiro 2026</option>
+                    <option value="2026-03">Março 2026</option>
+                    <option value="2026-04">Abril 2026</option>
+                    <option value="2026-05">Maio 2026</option>
+                    <option value="2026-06">Junho 2026</option>
+                    <option value="2026-07">Julho 2026</option>
+                    <option value="2026-08">Agosto 2026</option>
+                    <option value="2026-09">Setembro 2026</option>
+                    <option value="2026-10">Outubro 2026</option>
+                    <option value="2026-11">Novembro 2026</option>
+                    <option value="2026-12">Dezembro 2026</option>
+                </select>
+            </div>
+            <button class="btn btn-success" onclick="criarNovoMes()">✨ Criar Mês</button>
+        </div>
+    </div>
+
+    <script>
+        let mesAtual = '';
+        let dadosMes = null;
+        const DESPESAS_FIXAS = { condominio: 500, financiamento: 2700 };
+
+        async function init() {
+            await carregarMeses();
+            const agora = new Date();
+            mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+            document.getElementById('monthSelect').value = mesAtual;
+            await carregarMes();
+        }
+
+        async function carregarMeses() {
+            try {
+                const result = await window.storage.list('mes:', true);
+                const meses = result.keys.map(k => k.replace('mes:', ''));
+                
+                const select = document.getElementById('monthSelect');
+                select.innerHTML = '';
+                
+                if (meses.length === 0) {
+                    // Criar mês atual se não existir
+                    const agora = new Date();
+                    const mesId = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+                    await criarMesInicial(mesId);
+                    meses.push(mesId);
+                }
+                
+                meses.sort().reverse().forEach(mes => {
+                    const option = document.createElement('option');
+                    option.value = mes;
+                    option.textContent = formatarMes(mes);
+                    select.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Erro ao carregar meses:', error);
+                // Se não existir nenhum mês, criar o atual
+                const agora = new Date();
+                const mesId = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
+                await criarMesInicial(mesId);
+                await carregarMeses();
+            }
+        }
+
+        async function criarMesInicial(mesId) {
+            const dados = {
+                receitas: { fixo: 7000, integralmedica: 0, floraAmar: 0 },
+                despesas: []
+            };
+            await window.storage.set(`mes:${mesId}`, JSON.stringify(dados), true);
+        }
+
+        async function carregarMes() {
+            try {
+                atualizarSyncStatus('Carregando...', '🔄');
+                mesAtual = document.getElementById('monthSelect').value;
+                
+                const result = await window.storage.get(`mes:${mesAtual}`, true);
+                dadosMes = JSON.parse(result.value);
+                
+                renderizar();
+                atualizarSyncStatus('Sincronizado', '✅');
+            } catch (error) {
+                console.error('Erro ao carregar mês:', error);
+                dadosMes = {
+                    receitas: { fixo: 7000, integralmedica: 0, floraAmar: 0 },
+                    despesas: []
+                };
+                renderizar();
+                atualizarSyncStatus('Erro ao carregar', '⚠️');
+            }
+        }
+
+        async function salvarDados() {
+            try {
+                atualizarSyncStatus('Salvando...', '🔄');
+                await window.storage.set(`mes:${mesAtual}`, JSON.stringify(dadosMes), true);
+                atualizarSyncStatus('Salvo!', '✅');
+                setTimeout(() => atualizarSyncStatus('Sincronizado', '✅'), 2000);
+            } catch (error) {
+                console.error('Erro ao salvar:', error);
+                atualizarSyncStatus('Erro ao salvar', '❌');
+            }
+        }
+
+        function atualizarSyncStatus(mensagem, icone) {
+            const status = document.getElementById('syncStatus');
+            status.innerHTML = `<span>${icone}</span><span>${mensagem}</span>`;
+        }
+
+        function formatMoeda(valor) {
+            return new Intl.NumberFormat('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            }).format(valor);
+        }
+
+        function formatarMes(mesId) {
+            const [ano, mes] = mesId.split('-');
+            const meses = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            return `${meses[parseInt(mes) - 1]} ${ano}`;
+        }
+
+        function renderizar() {
+            const totalReceita = dadosMes.receitas.fixo + dadosMes.receitas.integralmedica + dadosMes.receitas.floraAmar;
+            const totalDespesasVariaveis = dadosMes.despesas.reduce((sum, d) => sum + d.valor, 0);
+            const totalDespesasFixas = DESPESAS_FIXAS.condominio + DESPESAS_FIXAS.financiamento;
+            const totalDespesas = totalDespesasVariaveis + totalDespesasFixas;
+            const sobra = totalReceita - totalDespesas;
+
+            document.getElementById('totalReceita').textContent = formatMoeda(totalReceita);
+            document.getElementById('totalDespesas').textContent = formatMoeda(totalDespesas);
+            document.getElementById('totalSobra').textContent = formatMoeda(Math.max(sobra, 0));
+            
+            const sobraDetail = document.getElementById('sobraDetail');
+            if (sobra > 0) {
+                sobraDetail.textContent = '🎉 Ótimo! Sobrou dinheiro para abater';
+                sobraDetail.style.color = 'var(--success)';
+            } else if (sobra < 0) {
+                sobraDetail.textContent = '⚠️ Atenção: gastando mais que recebe!';
+                sobraDetail.style.color = 'var(--danger)';
+            } else {
+                sobraDetail.textContent = 'Zerado no mês';
+                sobraDetail.style.color = 'var(--text-secondary)';
+            }
+
+            renderizarDespesas();
+
+            // Abrir modal de receitas se for primeira vez
+            if (totalReceita === 7000 && dadosMes.despesas.length === 0) {
+                setTimeout(() => abrirModal('modalReceitas'), 1000);
+            }
+        }
+
+        function renderizarDespesas() {
+            const lista = document.getElementById('expenseList');
+            
+            if (dadosMes.despesas.length === 0) {
+                lista.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📭</div>
+                        <p>Nenhuma despesa lançada</p>
+                        <p style="font-size: 0.9em; margin-top: 10px;">Toque no botão + para adicionar</p>
+                    </div>
+                `;
+                return;
+            }
+
+            lista.innerHTML = dadosMes.despesas.map((d, idx) => `
+                <div class="expense-item ${d.categoria}">
+                    <div class="expense-info">
+                        <div class="expense-name">${getCategoriaIcon(d.categoria)} ${d.descricao}</div>
+                        <div class="expense-meta">
+                            ${d.cartao === 'cartao1' ? '💳 Cartão 1 (vence 05)' : '💳 Cartão 2 (vence 28)'} • ${d.data}
+                        </div>
+                    </div>
+                    <div class="expense-value">${formatMoeda(d.valor)}</div>
+                    <button class="expense-delete" onclick="removerDespesa(${idx})">🗑️</button>
+                </div>
+            `).join('');
+        }
+
+        async function salvarReceitas() {
+            dadosMes.receitas.fixo = parseFloat(document.getElementById('salarioFixo').value) || 7000;
+            dadosMes.receitas.integralmedica = parseFloat(document.getElementById('integralmedica').value) || 0;
+            dadosMes.receitas.floraAmar = parseFloat(document.getElementById('floraAmar').value) || 0;
+            
+            await salvarDados();
+            renderizar();
+            fecharModal('modalReceitas');
+        }
+
+        async function adicionarDespesa() {
+            const descricao = document.getElementById('descricao').value;
+            const valor = parseFloat(document.getElementById('valor').value);
+            const categoria = document.getElementById('categoria').value;
+            const cartao = document.getElementById('cartao').value;
+
+            if (!descricao || !valor || valor <= 0) {
+                alert('⚠️ Preencha todos os campos!');
+                return;
+            }
+
+            const despesa = {
+                descricao,
+                valor,
+                categoria,
+                cartao,
+                data: new Date().toLocaleDateString('pt-BR')
+            };
+
+            dadosMes.despesas.push(despesa);
+            
+            // Limpar campos
+            document.getElementById('descricao').value = '';
+            document.getElementById('valor').value = '';
+
+            await salvarDados();
+            renderizar();
+            fecharModal('modalDespesa');
+        }
+
+        async function removerDespesa(idx) {
+            if (confirm('Tem certeza que deseja remover esta despesa?')) {
+                dadosMes.despesas.splice(idx, 1);
+                await salvarDados();
+                renderizar();
+            }
+        }
+
+        function getCategoriaIcon(categoria) {
+            const icons = {
+                'fixa': '🏠',
+                'mercado': '🛒',
+                'pessoal': '👤',
+                'farmacia': '💊',
+                'outros': '📦'
+            };
+            return icons[categoria] || '📦';
+        }
+
+        function abrirModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function fecharModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        function abrirModalDespesa() {
+            abrirModal('modalDespesa');
+        }
+
+        function abrirNovoMes() {
+            abrirModal('modalNovoMes');
+        }
+
+        async function criarNovoMes() {
+            const novoMesId = document.getElementById('novoMesSelect').value;
+            await criarMesInicial(novoMesId);
+            await carregarMeses();
+            document.getElementById('monthSelect').value = novoMesId;
+            mesAtual = novoMesId;
+            await carregarMes();
+            fecharModal('modalNovoMes');
+        }
+
+        // Fechar modal ao clicar fora
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                }
+            });
+        });
+
+        // Auto-sync a cada 30 segundos
+        setInterval(async () => {
+            if (mesAtual) {
+                await carregarMes();
+            }
+        }, 30000);
+
+        // Inicializar app
+        init();
+    </script>
+</body>
+</html>
