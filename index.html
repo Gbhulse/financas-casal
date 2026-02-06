@@ -421,12 +421,12 @@
     <div class="app-container">
         <div class="header">
             <h1>💰 Finanças do Casal</h1>
-            <p class="header-subtitle">Sincronizado em tempo real</p>
+            <p class="header-subtitle">Controle financeiro simples e prático</p>
         </div>
 
         <div class="sync-status" id="syncStatus">
-            <span>🔄</span>
-            <span>Carregando dados...</span>
+            <span>📱</span>
+            <span>Dados salvos no seu dispositivo</span>
         </div>
 
         <div class="month-selector">
@@ -562,84 +562,69 @@
         const DESPESAS_FIXAS = { condominio: 500, financiamento: 2700 };
 
         async function init() {
-            await carregarMeses();
+            carregarMeses();
             const agora = new Date();
             mesAtual = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
             document.getElementById('monthSelect').value = mesAtual;
-            await carregarMes();
+            carregarMes();
         }
 
-        async function carregarMeses() {
-            try {
-                const result = await window.storage.list('mes:', true);
-                const meses = result.keys.map(k => k.replace('mes:', ''));
-                
-                const select = document.getElementById('monthSelect');
-                select.innerHTML = '';
-                
-                if (meses.length === 0) {
-                    // Criar mês atual se não existir
-                    const agora = new Date();
-                    const mesId = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
-                    await criarMesInicial(mesId);
-                    meses.push(mesId);
-                }
-                
-                meses.sort().reverse().forEach(mes => {
-                    const option = document.createElement('option');
-                    option.value = mes;
-                    option.textContent = formatarMes(mes);
-                    select.appendChild(option);
-                });
-            } catch (error) {
-                console.error('Erro ao carregar meses:', error);
-                // Se não existir nenhum mês, criar o atual
+        function carregarMeses() {
+            const mesesSalvos = localStorage.getItem('meses');
+            let meses = mesesSalvos ? JSON.parse(mesesSalvos) : [];
+            
+            const select = document.getElementById('monthSelect');
+            select.innerHTML = '';
+            
+            if (meses.length === 0) {
+                // Criar mês atual se não existir
                 const agora = new Date();
                 const mesId = `${agora.getFullYear()}-${String(agora.getMonth() + 1).padStart(2, '0')}`;
-                await criarMesInicial(mesId);
-                await carregarMeses();
+                criarMesInicial(mesId);
+                meses.push(mesId);
+                localStorage.setItem('meses', JSON.stringify(meses));
             }
+            
+            meses.sort().reverse().forEach(mes => {
+                const option = document.createElement('option');
+                option.value = mes;
+                option.textContent = formatarMes(mes);
+                select.appendChild(option);
+            });
         }
 
-        async function criarMesInicial(mesId) {
+        function criarMesInicial(mesId) {
             const dados = {
                 receitas: { fixo: 7000, integralmedica: 0, floraAmar: 0 },
                 despesas: []
             };
-            await window.storage.set(`mes:${mesId}`, JSON.stringify(dados), true);
+            localStorage.setItem(`mes:${mesId}`, JSON.stringify(dados));
         }
 
-        async function carregarMes() {
-            try {
-                atualizarSyncStatus('Carregando...', '🔄');
-                mesAtual = document.getElementById('monthSelect').value;
-                
-                const result = await window.storage.get(`mes:${mesAtual}`, true);
-                dadosMes = JSON.parse(result.value);
-                
-                renderizar();
-                atualizarSyncStatus('Sincronizado', '✅');
-            } catch (error) {
-                console.error('Erro ao carregar mês:', error);
+        function carregarMes() {
+            atualizarSyncStatus('Carregando...', '🔄');
+            mesAtual = document.getElementById('monthSelect').value;
+            
+            const dadosSalvos = localStorage.getItem(`mes:${mesAtual}`);
+            
+            if (dadosSalvos) {
+                dadosMes = JSON.parse(dadosSalvos);
+            } else {
                 dadosMes = {
                     receitas: { fixo: 7000, integralmedica: 0, floraAmar: 0 },
                     despesas: []
                 };
-                renderizar();
-                atualizarSyncStatus('Erro ao carregar', '⚠️');
             }
+            
+            renderizar();
+            atualizarSyncStatus('Pronto!', '✅');
         }
 
-        async function salvarDados() {
-            try {
-                atualizarSyncStatus('Salvando...', '🔄');
-                await window.storage.set(`mes:${mesAtual}`, JSON.stringify(dadosMes), true);
-                atualizarSyncStatus('Salvo!', '✅');
-                setTimeout(() => atualizarSyncStatus('Sincronizado', '✅'), 2000);
-            } catch (error) {
-                console.error('Erro ao salvar:', error);
-                atualizarSyncStatus('Erro ao salvar', '❌');
-            }
+        function salvarDados() {
+            atualizarSyncStatus('Salvando...', '🔄');
+            localStorage.setItem(`mes:${mesAtual}`, JSON.stringify(dadosMes));
+            atualizarSyncStatus('Salvo!', '✅');
+            setTimeout(() => atualizarSyncStatus('Pronto!', '✅'), 1000);
         }
 
         function atualizarSyncStatus(mensagem, icone) {
@@ -719,17 +704,17 @@
             `).join('');
         }
 
-        async function salvarReceitas() {
+        function salvarReceitas() {
             dadosMes.receitas.fixo = parseFloat(document.getElementById('salarioFixo').value) || 7000;
             dadosMes.receitas.integralmedica = parseFloat(document.getElementById('integralmedica').value) || 0;
             dadosMes.receitas.floraAmar = parseFloat(document.getElementById('floraAmar').value) || 0;
             
-            await salvarDados();
+            salvarDados();
             renderizar();
             fecharModal('modalReceitas');
         }
 
-        async function adicionarDespesa() {
+        function adicionarDespesa() {
             const descricao = document.getElementById('descricao').value;
             const valor = parseFloat(document.getElementById('valor').value);
             const categoria = document.getElementById('categoria').value;
@@ -754,15 +739,15 @@
             document.getElementById('descricao').value = '';
             document.getElementById('valor').value = '';
 
-            await salvarDados();
+            salvarDados();
             renderizar();
             fecharModal('modalDespesa');
         }
 
-        async function removerDespesa(idx) {
+        function removerDespesa(idx) {
             if (confirm('Tem certeza que deseja remover esta despesa?')) {
                 dadosMes.despesas.splice(idx, 1);
-                await salvarDados();
+                salvarDados();
                 renderizar();
             }
         }
@@ -794,13 +779,22 @@
             abrirModal('modalNovoMes');
         }
 
-        async function criarNovoMes() {
+        function criarNovoMes() {
             const novoMesId = document.getElementById('novoMesSelect').value;
-            await criarMesInicial(novoMesId);
-            await carregarMeses();
+            criarMesInicial(novoMesId);
+            
+            // Adicionar à lista de meses
+            const mesesSalvos = localStorage.getItem('meses');
+            let meses = mesesSalvos ? JSON.parse(mesesSalvos) : [];
+            if (!meses.includes(novoMesId)) {
+                meses.push(novoMesId);
+                localStorage.setItem('meses', JSON.stringify(meses));
+            }
+            
+            carregarMeses();
             document.getElementById('monthSelect').value = novoMesId;
             mesAtual = novoMesId;
-            await carregarMes();
+            carregarMes();
             fecharModal('modalNovoMes');
         }
 
@@ -813,10 +807,11 @@
             });
         });
 
-        // Auto-sync a cada 30 segundos
-        setInterval(async () => {
+        // Auto-refresh display (não precisa mais de sync pois é local)
+        setInterval(() => {
             if (mesAtual) {
-                await carregarMes();
+                // Apenas atualiza o display sem recarregar
+                renderizar();
             }
         }, 30000);
 
